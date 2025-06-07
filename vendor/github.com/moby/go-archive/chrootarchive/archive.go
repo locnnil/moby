@@ -3,6 +3,7 @@ package chrootarchive
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -52,6 +53,17 @@ func UntarUncompressed(tarArchive io.Reader, dest string, options *archive.TarOp
 
 // Handler for teasing out the automatic decompression
 func untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions, decompress bool, root string) error {
+	log.Println("\n\n")
+	str := "untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions, decompress bool, root string) error"
+	log.Println("[DRI] function called:", str)
+
+	log.Println("[DRI] tarArchive:%v", tarArchive)
+	log.Println("[DRI] dest:%v", dest)
+	log.Println("[DRI] options:%v", options)
+	log.Println("[DRI] decompress:%v", decompress)
+	log.Println("[DRI] root:%v", root)
+	log.Println("\n\n")
+
 	if tarArchive == nil {
 		return fmt.Errorf("Empty archive")
 	}
