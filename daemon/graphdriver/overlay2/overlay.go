@@ -681,6 +681,10 @@ func (d *Driver) ApplyDiff(id string, parent string, diff io.Reader) (size int64
 
 	applyDir := d.getDiffPath(id)
 
+	str := "func (d *Driver) ApplyDiff(id string, parent string, diff io.Reader) (size int64, err error)"
+
+	logger.Debugf("[DRI] Function:\n%s\n %s", str, applyDir)
+	logger.Debugf("[DRI] Args: id=%s, parent=%s, diff=%v", id, parent, diff)
 	logger.Debugf("Applying tar in %s", applyDir)
 	// Overlay doesn't need the parent id to apply the diff
 	if err := untar(diff, applyDir, &archive.TarOptions{
@@ -688,8 +692,12 @@ func (d *Driver) ApplyDiff(id string, parent string, diff io.Reader) (size int64
 		WhiteoutFormat: archive.OverlayWhiteoutFormat,
 		InUserNS:       userns.RunningInUserNS(),
 	}); err != nil {
+		logger.Debugf("[DRI] Error applying diff for %s: %v", id, err)
+
 		return 0, err
 	}
+
+	logger.Debugf("[DRI] No Error!!! ")
 
 	return directory.Size(context.TODO(), applyDir)
 }
