@@ -351,8 +351,18 @@ func (ldm *LayerDownloadManager) makeDownloadFunc(descriptor DownloadDescriptor,
 			}
 			if ds, ok := d.layerStore.(layer.DescribableStore); ok {
 				d.layer, err = ds.RegisterWithDescriptor(inflatedLayerData, parentLayer, src)
+
+				str := "ds.RegisterWithDescriptor(inflatedLayerData, parentLayer, src)"
+				log.G(context.TODO()).Infof("Error from(1): %s", str)
+				log.G(context.TODO()).Infof("args:\n%v\n%v\n%v",
+					inflatedLayerData, parentLayer, src)
 			} else {
 				d.layer, err = d.layerStore.Register(inflatedLayerData, parentLayer)
+
+				str := "d.layerStore.Register(inflatedLayerData, parentLayer)"
+				log.G(context.TODO()).Infof("Error from(2): %s", str)
+				log.G(context.TODO()).Infof("args:\n%v\n%v", inflatedLayerData,
+					parentLayer)
 			}
 			if err != nil {
 				select {
