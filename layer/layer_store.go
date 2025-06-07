@@ -246,7 +246,7 @@ func (ls *layerStore) applyTar(tx *fileMetadataTransaction, ts io.Reader, parent
 
 	log.G(context.TODO()).Debugf("Applied tar %s to %s, size: %d", layer.diffID, layer.cacheID, applySize)
 
-	panic("Checking trace...")
+	// panic("Checking trace...")
 	return nil
 }
 
