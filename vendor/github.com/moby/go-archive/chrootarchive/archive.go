@@ -57,11 +57,11 @@ func untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions
 	str := "untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions, decompress bool, root string) error"
 	log.Println("[DRI] function called:", str)
 
-	log.Println("[DRI] tarArchive:%v", tarArchive)
-	log.Println("[DRI] dest:%v", dest)
-	log.Println("[DRI] options:%v", options)
-	log.Println("[DRI] decompress:%v", decompress)
-	log.Println("[DRI] root:%v", root)
+	log.Println("[DRI] tarArchive: ", tarArchive)
+	log.Println("[DRI] dest: ", dest)
+	log.Println("[DRI] options: ", options)
+	log.Println("[DRI] decompress: ", decompress)
+	log.Println("[DRI] root: ", root)
 	log.Println("\n\n")
 
 	if tarArchive == nil {
