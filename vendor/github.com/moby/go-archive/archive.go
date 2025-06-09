@@ -1166,7 +1166,7 @@ func Unpack(decompressedArchive io.Reader, dest string, options *TarOptions) err
 	count := 0
 loop:
 	for {
-		log.Println("[DRI] Joining loop, count: ", count)
+		lg.Println("[DRI] Joining loop, count: ", count)
 		count++
 
 		hdr, err := tr.Next()
