@@ -1170,7 +1170,11 @@ loop:
 		count++
 
 		hdr, err := tr.Next()
-		lg.Println("[DRI] Reading next tar header:", hdr.Name, " type:", hdr.Typeflag)
+
+		if hdr != nil {
+			lg.Println("[DRI] Reading next tar header:", hdr.Name, " type:", hdr.Typeflag)
+		}
+
 		if err == io.EOF {
 			lg.Println("[DRI] Reached end of tar archive")
 			// end of tar archive
@@ -1233,7 +1237,9 @@ loop:
 		lg.Println("[DRI] Checking for path traversal in relative path: ", rel)
 		if strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
 			lg.Println("[DRI] Path traversal detected in relative path: ", rel)
-			lg.Println("[DRI] returning breakout error for path: ", hdr.Name, " in destination: ", dest)
+			if hdr != nil && hdr.Name != "" {
+				lg.Println("[DRI] returning breakout error for path: ", hdr.Name, " in destination: ", dest)
+			}
 			return breakoutError(fmt.Errorf("%q is outside of %q", hdr.Name, dest))
 		}
 
