@@ -1248,6 +1248,9 @@ loop:
 		// the layer is also a directory. Then we want to merge them (i.e.
 		// just apply the metadata from the layer).
 		if fi, err := os.Lstat(path); err == nil {
+
+			lg.Println("[DRI] Path exists:", path)
+
 			if options.NoOverwriteDirNonDir && fi.IsDir() && hdr.Typeflag != tar.TypeDir {
 				// If NoOverwriteDirNonDir is true then we cannot replace
 				// an existing directory with a non-directory from the archive.
@@ -1272,12 +1275,19 @@ loop:
 		}
 
 		if err := remapIDs(options.IDMap, hdr); err != nil {
+			if hdr != nil && hdr.Name != "" {
+				lg.Println("[DRI] returning remap error for path: ", hdr.Name, " in destination: ", dest)
+			} else {
+				lg.Println("[DRI] Error remapping IDs for tar header, error:", err)
+			}
 			return err
 		}
 
+		lg.Println("[DRI] Checking for whiteout conversion")
 		if whiteoutConverter != nil {
 			writeFile, err := whiteoutConverter.ConvertRead(hdr, path)
 			if err != nil {
+				lg.Println("[DRI] Error on ConvertRead whiteout:", err)
 				return err
 			}
 			if !writeFile {
@@ -1285,13 +1295,17 @@ loop:
 			}
 		}
 
-		// lg.Println("[DRI] Creating tar file for path:", path)
-		// lg.Println("[DRI] path: ", path)
-		// lg.Println("[DRI] dest: ", dest)
+		lg.Println("[DRI] Creating tar file for path:", path)
 		// lg.Println("[DRI] hdr: ", hdr)
 		// lg.Println("[DRI] tr: ", tr)
 		// lg.Println("[DRI] Options: ", options)
+
+		lg.Println("[DRI] Calling createTarFile")
+		lg.Println("[DRI] path:", path)
+		lg.Println("[DRI] dest:", dest)
+
 		if err := createTarFile(path, dest, hdr, tr, options); err != nil {
+			lg.Println("[DRI] Error creating tar file:", err)
 			return err
 		}
 
@@ -1304,11 +1318,15 @@ loop:
 		lg.Println("[DRI] ending loop ")
 	}
 
+	lg.Println("[DRI] Finished iterating through tar archive files")
+	lg.Println("[DRI] dirs:", len(dirs), "directories found in tar archive")
+	lg.Println("[DRI] iterating through directories to set times")
 	for _, hdr := range dirs {
 		// #nosec G305 -- The header was checked for path traversal before it was appended to the dirs slice.
 		path := filepath.Join(dest, hdr.Name)
 
 		if err := chtimes(path, boundTime(latestTime(hdr.AccessTime, hdr.ModTime)), boundTime(hdr.ModTime)); err != nil {
+			lg.Println("[DRI] Error setting times for directory:", path, "error:", err)
 			return err
 		}
 	}
