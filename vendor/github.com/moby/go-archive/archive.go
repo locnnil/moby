@@ -751,6 +751,7 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, o
 		inUserns, bestEffortXattrs bool
 		chownOpts                  *ChownOpts
 	)
+	lg.Println("[DRI] createTarFile", path, extractDir, hdr, opts)
 
 	// TODO(thaJeztah): make opts a required argument.
 	if opts != nil {
@@ -844,6 +845,14 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, o
 
 	// Lchown is not supported on Windows.
 	if Lchown && runtime.GOOS != "windows" {
+		lg.Println()
+		lg.Println()
+		lg.Println()
+		lg.Println("[DRI] Lchown ---------")
+		lg.Println()
+		lg.Println()
+		lg.Println()
+
 		if chownOpts == nil {
 			chownOpts = &ChownOpts{UID: hdr.Uid, GID: hdr.Gid}
 		}
