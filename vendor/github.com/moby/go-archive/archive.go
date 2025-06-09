@@ -1207,7 +1207,7 @@ loop:
 		lg.Println("[DRI] createImpliedDirectories for tar header:", hdr.Name)
 		lg.Println("[DRI] Destination directory: ", dest)
 		lg.Println("[DRI] Options: ", options)
-		lg.Println("[DRI] hdr: ", hdr)
+		// lg.Println("[DRI] hdr: ", hdr)
 
 		// Ensure that the parent directory exists.
 		err = createImpliedDirectories(dest, hdr, options)
@@ -1279,7 +1279,7 @@ loop:
 			}
 		}
 
-		lg.Println("[DRI] Creating tar file for path:", path, "with header:", hdr)
+		lg.Println("[DRI] Creating tar file for path:", path)
 		lg.Println("[DRI] path: ", path)
 		lg.Println("[DRI] dest: ", dest)
 		// lg.Println("[DRI] hdr: ", hdr)
@@ -1289,7 +1289,7 @@ loop:
 			return err
 		}
 
-		// Directory mtimes must be handled at the end to avoid further
+		// DirectcreateImpliedDirectoriesory mtimes must be handled at the end to avoid further
 		// file creation in them to modify the directory mtime
 		if hdr.Typeflag == tar.TypeDir {
 			dirs = append(dirs, hdr)
@@ -1326,8 +1326,13 @@ func createImpliedDirectories(dest string, hdr *tar.Header, options *TarOptions)
 			// usage that reduces the portability of an image.
 			uid, gid := options.IDMap.RootPair()
 
+			lg.Println("[DRI] calling MkdirAllAndChown for parent path:", parentPath)
+			lg.Println("[DRI] Implied directory mode:", ImpliedDirectoryMode)
+			lg.Println("[DRI] UID:", uid, "GID:", gid)
+
 			err = user.MkdirAllAndChown(parentPath, ImpliedDirectoryMode, uid, gid, user.WithOnlyNew)
 			if err != nil {
+				lg.Println("[DRI] Error creating implied directory:", err)
 				return err
 			}
 		}
