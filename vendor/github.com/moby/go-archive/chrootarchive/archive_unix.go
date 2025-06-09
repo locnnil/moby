@@ -5,6 +5,7 @@ package chrootarchive
 import (
 	"errors"
 	"io"
+	"log"
 	"net"
 	"os/user"
 	"path/filepath"
@@ -21,11 +22,15 @@ func init() {
 }
 
 func invokeUnpack(decompressedArchive io.Reader, dest string, options *archive.TarOptions, root string) error {
+	log.Println()
 	relDest, err := resolvePathInChroot(root, dest)
+	log.Println("[DRI] invokeUnpack: relDest:", relDest)
 	if err != nil {
+		log.Println("[DRI] error resolving path in chroot:", err)
 		return err
 	}
 
+	log.Println("[DRI] invokeUnpack: decompressedArchive:", decompressedArchive)
 	return doUnpack(decompressedArchive, relDest, root, options)
 }
 
