@@ -12,7 +12,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	lg "log"
 	"os"
 	"os/exec"
