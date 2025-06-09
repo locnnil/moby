@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	lg "log"
 	"os"
 	"os/exec"
@@ -768,10 +769,13 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, o
 
 	switch hdr.Typeflag {
 	case tar.TypeDir:
+		lg.Println("[DRI] Type is Directory")
 		// Create directory unless it exists as a directory already.
 		// In that case we just want to merge the two
 		if fi, err := os.Lstat(path); !(err == nil && fi.IsDir()) {
+			lg.Println("[DRI] Creating directory", path, "with mode", hdrInfo.Mode())
 			if err := os.Mkdir(path, hdrInfo.Mode()); err != nil {
+				log.Println("[DRI] os.Mkdir failed", err)
 				return err
 			}
 		}
