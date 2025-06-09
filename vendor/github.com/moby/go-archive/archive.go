@@ -1282,9 +1282,9 @@ loop:
 		lg.Println("[DRI] Creating tar file for path:", path, "with header:", hdr)
 		lg.Println("[DRI] path: ", path)
 		lg.Println("[DRI] dest: ", dest)
-		lg.Println("[DRI] hdr: ", hdr)
-		lg.Println("[DRI] tr: ", tr)
-		lg.Println("[DRI] Options: ", options)
+		// lg.Println("[DRI] hdr: ", hdr)
+		// lg.Println("[DRI] tr: ", tr)
+		// lg.Println("[DRI] Options: ", options)
 		if err := createTarFile(path, dest, hdr, tr, options); err != nil {
 			return err
 		}
