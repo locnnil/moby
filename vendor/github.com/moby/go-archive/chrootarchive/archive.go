@@ -82,6 +82,17 @@ func untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions
 		dest = filepath.Clean(dest)
 		if _, err := os.Stat(dest); os.IsNotExist(err) {
 			if err := user.MkdirAllAndChown(dest, 0o755, uid, gid, user.WithOnlyNew); err != nil {
+				log.Println()
+				log.Println()
+				str := "user.MkdirAllAndChown(dest, 0o755, uid, gid, user.WithOnlyNew)"
+				log.Println("\nfunc: ", str)
+				log.Println("dest: ", dest)
+				log.Println("uid: ", uid)
+				log.Println("gid: ", gid)
+				log.Println("user.WithOnlyNew: ", user.WithOnlyNew)
+				log.Println("[DRI] error creating destination directory:", err)
+				log.Println()
+				log.Println()
 				return err
 			}
 		}
@@ -91,6 +102,10 @@ func untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions
 	if decompress {
 		decompressedArchive, err := archive.DecompressStream(tarArchive)
 		if err != nil {
+			log.Println()
+			str := "archive.DecompressStream(tarArchive)"
+			log.Println("\nfunc: ", str)
+			fmt.Println("[DRI] error decompressing archive:", err)
 			return err
 		}
 		defer decompressedArchive.Close()
