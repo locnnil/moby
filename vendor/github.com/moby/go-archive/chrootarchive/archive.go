@@ -76,7 +76,10 @@ func untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions
 
 	// If dest is inside a root then directory is created within chroot by extractor.
 	// This case is only currently used by cp.
+	log.Println("[DRI] checking if dest is inside root")
 	if dest == root {
+
+		log.Println("[DRI] dest == root")
 		uid, gid := options.IDMap.RootPair()
 
 		dest = filepath.Clean(dest)
@@ -98,6 +101,7 @@ func untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions
 		}
 	}
 
+	log.Println("[DRI] checking decompression")
 	r := io.NopCloser(tarArchive)
 	if decompress {
 		decompressedArchive, err := archive.DecompressStream(tarArchive)
