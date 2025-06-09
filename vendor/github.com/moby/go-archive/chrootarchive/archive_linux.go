@@ -3,6 +3,7 @@ package chrootarchive
 import (
 	"fmt"
 	"io"
+	"log"
 
 	"golang.org/x/sys/unix"
 
@@ -10,11 +11,15 @@ import (
 )
 
 func doUnpack(decompressedArchive io.Reader, relDest, root string, options *archive.TarOptions) error {
+	log.Println("[DRI] doUnpack: relDest:", relDest)
 	done := make(chan error)
 	err := goInChroot(root, func() { done <- archive.Unpack(decompressedArchive, relDest, options) })
+	log.Println("[DRI] doUnpack: relDest:", relDest, "done:", done)
 	if err != nil {
+		log.Println("[DRI] error in goInChroot:", err)
 		return err
 	}
+	log.Println("[DRI] waiting for done channel")
 	return <-done
 }
 
