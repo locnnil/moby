@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -1146,22 +1147,38 @@ func (t *Tarballer) Do() {
 
 // Unpack unpacks the decompressedArchive to dest with options.
 func Unpack(decompressedArchive io.Reader, dest string, options *TarOptions) error {
+	log.Println("[DRI] Unpacking tar archive to", dest)
+
+	log.Println("[DRI] getting tar reader from decompressed archive")
 	tr := tar.NewReader(decompressedArchive)
 
 	var dirs []*tar.Header
 	whiteoutConverter := getWhiteoutConverter(options.WhiteoutFormat)
 
+	log.Println("[DRI] Whiteout converter:", options.WhiteoutFormat)
+	log.Println("[DRI] ")
+	log.Println("[DRI] Iterating through tar archive files")
+
 	// Iterate through the files in the archive.
+	count := 0
 loop:
 	for {
+		log.Println("[DRI] Joining loop, count: ", count)
+		count++
+
 		hdr, err := tr.Next()
+		log.Println("[DRI] Reading next tar header:", hdr.Name, " type:", hdr.Typeflag)
 		if err == io.EOF {
+			log.Println("[DRI] Reached end of tar archive")
 			// end of tar archive
 			break
 		}
 		if err != nil {
+			log.Println("[DRI] Error reading tar header:", err)
 			return err
 		}
+
+		log.Println("[DRI] Processing tar header:", hdr.Name, " type:", hdr.Typeflag)
 
 		// ignore XGlobalHeader early to avoid creating parent directories for them
 		if hdr.Typeflag == tar.TypeXGlobalHeader {
@@ -1169,10 +1186,14 @@ loop:
 			continue
 		}
 
+		log.Println("[DRI] tar header name", hdr.Name)
+
 		// Normalize name, for safety and for a simple is-root check
 		// This keeps "../" as-is, but normalizes "/../" to "/". Or Windows:
 		// This keeps "..\" as-is, but normalizes "\..\" to "\".
 		hdr.Name = filepath.Clean(hdr.Name)
+
+		log.Println("[DRI] Cleaned tar header name:", hdr.Name)
 
 		for _, exclude := range options.ExcludePatterns {
 			if strings.HasPrefix(hdr.Name, exclude) {
@@ -1180,19 +1201,36 @@ loop:
 			}
 		}
 
+		log.Println("[DRI] createImpliedDirectories for tar header:", hdr.Name)
+		log.Println("[DRI] Destination directory: ", dest)
+		log.Println("[DRI] Options: ", options)
+		log.Println("[DRI] hdr: ", hdr)
+
 		// Ensure that the parent directory exists.
 		err = createImpliedDirectories(dest, hdr, options)
 		if err != nil {
+			log.Println("[DRI] Error creating implied directories:", err)
 			return err
 		}
 
 		// #nosec G305 -- The joined path is checked for path traversal.
 		path := filepath.Join(dest, hdr.Name)
+
+		log.Println("[DRI] path: ", path)
+		log.Println("[DRI] dest: ", dest)
+		log.Println("[DRI] hdr.Name: ", hdr.Name)
+
 		rel, err := filepath.Rel(dest, path)
+		log.Println("[DRI] Relative path: ", rel)
 		if err != nil {
+			log.Println("[DRI] Error getting relative path: ", err)
 			return err
 		}
+
+		log.Println("[DRI] Checking for path traversal in relative path: ", rel)
 		if strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
+			log.Println("[DRI] Path traversal detected in relative path: ", rel)
+			log.Println("[DRI] returning breakout error for path: ", hdr.Name, " in destination: ", dest)
 			return breakoutError(fmt.Errorf("%q is outside of %q", hdr.Name, dest))
 		}
 
@@ -1238,6 +1276,12 @@ loop:
 			}
 		}
 
+		log.Println("[DRI] Creating tar file for path:", path, "with header:", hdr)
+		log.Println("[DRI] path: ", path)
+		log.Println("[DRI] dest: ", dest)
+		log.Println("[DRI] hdr: ", hdr)
+		log.Println("[DRI] tr: ", tr)
+		log.Println("[DRI] Options: ", options)
 		if err := createTarFile(path, dest, hdr, tr, options); err != nil {
 			return err
 		}
