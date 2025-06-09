@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	lg "log"
 	"os"
 	"os/exec"
@@ -1320,6 +1321,8 @@ loop:
 		lg.Println("[DRI] dest:", dest)
 
 		if err := createTarFile(path, dest, hdr, tr, options); err != nil {
+			lg.Println()
+			lg.Println()
 			lg.Println("[DRI] Error creating tar file:", err)
 			return err
 		}
