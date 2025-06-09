@@ -775,7 +775,7 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, o
 		if fi, err := os.Lstat(path); !(err == nil && fi.IsDir()) {
 			lg.Println("[DRI] Creating directory", path, "with mode", hdrInfo.Mode())
 			if err := os.Mkdir(path, hdrInfo.Mode()); err != nil {
-				log.Println("[DRI] os.Mkdir failed", err)
+				lg.Println("[DRI] os.Mkdir failed", err)
 				return err
 			}
 		}
