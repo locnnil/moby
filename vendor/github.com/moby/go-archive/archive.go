@@ -1181,7 +1181,7 @@ loop:
 			return err
 		}
 
-		lg.Println("[DRI] Processing tar header:", hdr.Name, " type:", hdr.Typeflag)
+		// lg.Println("[DRI] Processing tar header:", hdr.Name, " type:", hdr.Typeflag)
 
 		// ignore XGlobalHeader early to avoid creating parent directories for them
 		if hdr.Typeflag == tar.TypeXGlobalHeader {
@@ -1189,14 +1189,14 @@ loop:
 			continue
 		}
 
-		lg.Println("[DRI] tar header name", hdr.Name)
+		// lg.Println("[DRI] tar header name", hdr.Name)
 
 		// Normalize name, for safety and for a simple is-root check
 		// This keeps "../" as-is, but normalizes "/../" to "/". Or Windows:
 		// This keeps "..\" as-is, but normalizes "\..\" to "\".
 		hdr.Name = filepath.Clean(hdr.Name)
 
-		lg.Println("[DRI] Cleaned tar header name:", hdr.Name)
+		// lg.Println("[DRI] Cleaned tar header name:", hdr.Name)
 
 		for _, exclude := range options.ExcludePatterns {
 			if strings.HasPrefix(hdr.Name, exclude) {
@@ -1204,9 +1204,9 @@ loop:
 			}
 		}
 
-		lg.Println("[DRI] createImpliedDirectories for tar header:", hdr.Name)
-		lg.Println("[DRI] Destination directory: ", dest)
-		lg.Println("[DRI] Options: ", options)
+		// lg.Println("[DRI] createImpliedDirectories for tar header:", hdr.Name)
+		// lg.Println("[DRI] Destination directory: ", dest)
+		// lg.Println("[DRI] Options: ", options)
 		// lg.Println("[DRI] hdr: ", hdr)
 
 		// Ensure that the parent directory exists.
@@ -1219,9 +1219,9 @@ loop:
 		// #nosec G305 -- The joined path is checked for path traversal.
 		path := filepath.Join(dest, hdr.Name)
 
-		lg.Println("[DRI] path: ", path)
-		lg.Println("[DRI] dest: ", dest)
-		lg.Println("[DRI] hdr.Name: ", hdr.Name)
+		// lg.Println("[DRI] path: ", path)
+		// lg.Println("[DRI] dest: ", dest)
+		// lg.Println("[DRI] hdr.Name: ", hdr.Name)
 
 		rel, err := filepath.Rel(dest, path)
 		lg.Println("[DRI] Relative path: ", rel)
@@ -1279,9 +1279,9 @@ loop:
 			}
 		}
 
-		lg.Println("[DRI] Creating tar file for path:", path)
-		lg.Println("[DRI] path: ", path)
-		lg.Println("[DRI] dest: ", dest)
+		// lg.Println("[DRI] Creating tar file for path:", path)
+		// lg.Println("[DRI] path: ", path)
+		// lg.Println("[DRI] dest: ", dest)
 		// lg.Println("[DRI] hdr: ", hdr)
 		// lg.Println("[DRI] tr: ", tr)
 		// lg.Println("[DRI] Options: ", options)
@@ -1294,6 +1294,8 @@ loop:
 		if hdr.Typeflag == tar.TypeDir {
 			dirs = append(dirs, hdr)
 		}
+
+		lg.Println("[DRI] ending loop ")
 	}
 
 	for _, hdr := range dirs {
