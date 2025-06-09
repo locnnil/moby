@@ -847,16 +847,17 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, o
 	if Lchown && runtime.GOOS != "windows" {
 		lg.Println()
 		lg.Println()
-		lg.Println()
 		lg.Println("[DRI] Lchown ---------")
-		lg.Println()
-		lg.Println()
 		lg.Println()
 
 		if chownOpts == nil {
 			chownOpts = &ChownOpts{UID: hdr.Uid, GID: hdr.Gid}
 		}
+
+		lg.Println("[DRI] Lchown path: ", path)
+		lg.Println("[DRI] UID ", chownOpts.UID, " | GID ", chownOpts.GID)
 		if err := os.Lchown(path, chownOpts.UID, chownOpts.GID); err != nil {
+			lg.Println("[DRI] Lchown failed", err)
 			var msg string
 			if inUserns && errors.Is(err, syscall.EINVAL) {
 				msg = " (try increasing the number of subordinate IDs in /etc/subuid and /etc/subgid)"
@@ -913,6 +914,8 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, o
 			return err
 		}
 	}
+
+	lg.Println("[DRI] createTarFile done. Exiting...")
 	return nil
 }
 
