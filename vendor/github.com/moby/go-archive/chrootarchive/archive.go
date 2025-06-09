@@ -103,8 +103,11 @@ func untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions
 
 	log.Println("[DRI] checking decompression")
 	r := io.NopCloser(tarArchive)
+	log.Println("r: ", r)
 	if decompress {
+		log.Println("[DRI] decompressing archive")
 		decompressedArchive, err := archive.DecompressStream(tarArchive)
+		log.Println("[DRI] decompressedArchive: ", decompressedArchive)
 		if err != nil {
 			log.Println()
 			str := "archive.DecompressStream(tarArchive)"
@@ -113,9 +116,10 @@ func untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions
 			return err
 		}
 		defer decompressedArchive.Close()
+		log.Println("[DRI] decompressedArchive closed")
 		r = decompressedArchive
 	}
-
+	log.Println("[DRI] decompression complete, invoking unpack")
 	return invokeUnpack(r, dest, options, root)
 }
 
