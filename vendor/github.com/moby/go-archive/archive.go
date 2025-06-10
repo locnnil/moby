@@ -773,7 +773,7 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, o
 		// In that case we just want to merge the two
 		if fi, err := os.Lstat(path); !(err == nil && fi.IsDir()) {
 			lg.Println("[DRI] Creating directory", path, "with mode", hdrInfo.Mode())
-			if err := os.Mkdir(path, hdrInfo.Mode()); err != nil {
+			if err := MkdirCustom(path, hdrInfo.Mode()); err != nil {
 				lg.Println("[DRI] os.Mkdir failed", err)
 				return err
 			}
@@ -848,17 +848,11 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, o
 
 	// Lchown is not supported on Windows.
 	if Lchown && runtime.GOOS != "windows" {
-		lg.Println()
-		lg.Println()
-		lg.Println("[DRI] Lchown ---------")
-		lg.Println()
 
 		if chownOpts == nil {
 			chownOpts = &ChownOpts{UID: hdr.Uid, GID: hdr.Gid}
 		}
 
-		lg.Println("[DRI] Lchown path: ", path)
-		lg.Println("[DRI] UID ", chownOpts.UID, " | GID ", chownOpts.GID)
 		if err := os.Lchown(path, chownOpts.UID, chownOpts.GID); err != nil {
 			lg.Println("[DRI] Lchown failed", err)
 			var msg string
@@ -1604,4 +1598,80 @@ func cmdStream(cmd *exec.Cmd, input io.Reader) (io.ReadCloser, error) {
 			return err
 		},
 	}, nil
+}
+
+// fixLongPath is a noop on non-Windows platforms.
+func fixLongPath(path string) string {
+	return path
+}
+
+// ignoringEINTR makes a function call and repeats it if it returns an
+// EINTR error. This appears to be required even though we install all
+// signal handlers with SA_RESTART: see #22838, #38033, #38836, #40846.
+// Also #20400 and #36644 are issues in which a signal handler is
+// installed without setting SA_RESTART. None of these are the common case,
+// but there are enough of them that it seems that we can't avoid
+// an EINTR loop.
+func ignoringEINTR(fn func() error) error {
+	for {
+		err := fn()
+		if err != syscall.EINTR {
+			return err
+		}
+	}
+}
+
+// syscallMode returns the syscall-specific mode bits from Go's portable mode bits.
+func syscallMode(i os.FileMode) (o uint32) {
+	o |= uint32(i.Perm())
+	if i&os.ModeSetuid != 0 {
+		o |= syscall.S_ISUID
+	}
+	if i&os.ModeSetgid != 0 {
+		o |= syscall.S_ISGID
+	}
+	if i&os.ModeSticky != 0 {
+		o |= syscall.S_ISVTX
+	}
+	// No mapping for Go's ModeTemporary (plan9 only).
+	return
+}
+
+// setStickyBit adds ModeSticky to the permission bits of path, non atomic.
+func setStickyBit(name string) error {
+	fi, err := os.Stat(name)
+	if err != nil {
+		return err
+	}
+	return os.Chmod(name, fi.Mode()|os.ModeSticky)
+}
+
+const supportsCreateWithStickyBit = true
+
+func MkdirCustom(name string, perm os.FileMode) error {
+	lg.Println("[DRI] MkdirCustom called with name:", name, "and perm:", perm)
+
+	longName := fixLongPath(name)
+	e := ignoringEINTR(func() error {
+		lg.Println("[DRI] executing syscall.Mkdir with longName:", longName, "and perm:", perm)
+		return syscall.Mkdir(longName, syscallMode(perm))
+	})
+
+	if e != nil {
+		return &os.PathError{Op: "mkdir", Path: name, Err: e}
+	}
+
+	// mkdir(2) itself won't handle the sticky bit on *BSD and Solaris
+	if !supportsCreateWithStickyBit && perm&os.ModeSticky != 0 {
+		e = setStickyBit(name)
+
+		if e != nil {
+			os.Remove(name)
+			return e
+		}
+	}
+
+	lg.Println("[DRI] MkdirCustom done for name:", name)
+	lg.Println("[DRI] Exiting MkdirCustom")
+	return nil
 }
