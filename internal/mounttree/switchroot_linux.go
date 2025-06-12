@@ -2,6 +2,7 @@ package mounttree // import "github.com/docker/docker/internal/mounttree"
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -53,6 +54,7 @@ func SwitchRoot(path string) error {
 	}()
 
 	if os.Getenv("SNAP") != "" {
+		log.Println("[DRI] Workarround from /internal/mounttree/switchroot_linux.go")
 		return realChroot(path)
 	}
 
