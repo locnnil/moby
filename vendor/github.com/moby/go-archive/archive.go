@@ -1652,10 +1652,6 @@ func MkdirCustom(name string, perm os.FileMode) error {
 	lg.Println("[DRI] MkdirCustom called with name:", name, "and perm:", perm)
 
 	longName := fixLongPath(name)
-	if longName == "snap" || longName == "/snap" {
-		lg.Println("[DRI] MkdirCustom: skipping creation of 'snap' directory")
-		return nil
-	}
 	e := ignoringEINTR(func() error {
 		lg.Println("[DRI] executing syscall.Mkdir with longName:", longName, "and perm:", perm)
 		return syscall.Mkdir(longName, syscallMode(perm))
