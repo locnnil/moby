@@ -2,6 +2,7 @@ package mounttree
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
