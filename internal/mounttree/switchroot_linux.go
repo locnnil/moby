@@ -52,6 +52,10 @@ func SwitchRoot(path string) error {
 		}
 	}()
 
+	if os.Getenv("SNAP") != "" {
+		return realChroot(path)
+	}
+
 	if err := unix.PivotRoot(path, pivotDir); err != nil {
 		// If pivot fails, fall back to the normal chroot after cleaning up temp dir
 		if err := os.Remove(pivotDir); err != nil {
